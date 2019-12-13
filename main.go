@@ -200,6 +200,6 @@ func main() {
 	samples := fetchUsage(token, site, date)
 
 	for _, sample := range samples {
-		fmt.Printf("solar_usage_wh value=%d %d\n", sample.Solar, sample.TimeAsNano())
+		fmt.Printf("power solar_wh=%d %d\n", sample.Solar, sample.TimeAsNano())
 	}
 }
