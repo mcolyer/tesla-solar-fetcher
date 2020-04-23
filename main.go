@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -83,7 +84,7 @@ type Product struct {
 	BreakerAlertEnabled  bool   `json:"breaker_alert_enabled"`
 }
 
-func fetchEnergySite(token string) int {
+func fetchEnergySite(token string) (int, error) {
 	url := "https://owner-api.teslamotors.com/api/1/products"
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -119,7 +120,11 @@ func fetchEnergySite(token string) int {
 		fmt.Println("whoops:", err)
 	}
 
-	return parsed.Products[0].EnergySiteId
+	if len(parsed.Products) == 0 {
+		return 0, errors.New("No tesla products found")
+	} else {
+		return parsed.Products[0].EnergySiteId, nil
+	}
 }
 
 type EnergyResponse struct {
@@ -196,7 +201,11 @@ func main() {
 	}
 
 	token := getToken(email, password)
-	site := fetchEnergySite(token)
+	site, err := fetchEnergySite(token)
+	if err != nil {
+		log.Fatal("No Tesla products found")
+		os.Exit(-1)
+	}
 	samples := fetchUsage(token, site, date)
 
 	for _, sample := range samples {
